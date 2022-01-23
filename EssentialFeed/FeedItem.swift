@@ -12,4 +12,6 @@ struct FeedItem {
     let description: String?
     let location: String?
     let imageURL: URL
+    
+    //this is my first commit
 }
