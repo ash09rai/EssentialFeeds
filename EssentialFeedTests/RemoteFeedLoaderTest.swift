@@ -22,7 +22,7 @@ class RemoteFeedLoaderTest: XCTestCase {
         XCTAssertEqual(client.requestedURLs, [url])
     }
     
-    func test_initTwice_requestsDataFromURL() {
+    func test_initTwice_requestsDataFromURLTwice() {
         let url = URL(string: "https://agiven-url.com")!
         let (sut, client) = makeSUT(url: url)
         sut.load()
