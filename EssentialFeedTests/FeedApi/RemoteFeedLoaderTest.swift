@@ -33,7 +33,7 @@ class RemoteFeedLoaderTest: XCTestCase {
     //MARK: Check for connectivity or any other client errors
     func test_load_ErrorDeliveryOnClientError() {
         let (sut, client) = makeSUT()
-        expect(sut, toCompleteWithResult: .failure(.Connectivity)) {
+        expect(sut, toCompleteWithResult: .failure(RemoteFeedLoader.Error.Connectivity)) {
             let clienterror = NSError(domain: "Test Error", code: 0)
             client.complete(with : clienterror)
         }
@@ -43,7 +43,7 @@ class RemoteFeedLoaderTest: XCTestCase {
         let (sut, client) = makeSUT()
         let sampleHTTPStatusCode = [199,201,403, 404, 1099, 500, 300, 280]
         sampleHTTPStatusCode.enumerated().forEach { index, code in
-            expect(sut, toCompleteWithResult: .failure(.InValidData)) {
+            expect(sut, toCompleteWithResult: .failure(RemoteFeedLoader.Error.InValidData)) {
                 let jsonData = makeData(fromDictionary: [])
                 client.complete(withStatusCode: code, data: jsonData, at: index)
             }
@@ -52,7 +52,7 @@ class RemoteFeedLoaderTest: XCTestCase {
     //MARK: Check for valid status code with unexpected response json
     func test_load_ErrorDeliveryOn200HTTPResponseButInValidaJson() {
         let (sut, client) = makeSUT()
-        expect(sut, toCompleteWithResult: .failure(.InValidData)) {
+        expect(sut, toCompleteWithResult: .failure(RemoteFeedLoader.Error.InValidData)) {
             let inValidJson = Data("InValid Json".utf8)
             client.complete(withStatusCode: 200, data: inValidJson)
         }
@@ -115,7 +115,7 @@ class RemoteFeedLoaderTest: XCTestCase {
             switch (receivedResult, expectedResult) {
             case (.success(let receivedItems), .success(let expectedItems)):
                 XCTAssertEqual(receivedItems, expectedItems, file: file, line: line)
-            case (.failure(let receivedError), .failure(let expectedError)):
+            case (.failure(let receivedError as RemoteFeedLoader.Error), .failure(let expectedError as RemoteFeedLoader.Error)):
                 XCTAssertEqual(receivedError, expectedError, file: file, line: line)
             default:
                 XCTFail("Expected result : \(expectedResult) got result: \(receivedResult) instead", file: file, line: line)
