@@ -15,29 +15,56 @@ class URLSessionHTTPClient {
     }
     
     func get(from url: URL) {
-        session.dataTask(with: url) { _, _, _ in }
+        session.dataTask(with: url) { _, _, _ in }.resume()
     }
 }
 
 class URLSessionHTTPClientTests: XCTestCase {
     
     func test_getFromURl_createDataTaskWithURL() {
-        let urls: URL = URL(string: "http://any-test.com")!
+        let dummyURL: URL = URL(string: "http://any-test.com")!
         let session = URLSessionSpy()
         let sut = URLSessionHTTPClient(session: session)
-        sut.get(from: urls)
-        XCTAssertEqual(session.receivedURLs, [urls])
+        sut.get(from: dummyURL)
+        XCTAssertEqual(session.receivedURLs, [dummyURL])
+    }
+    
+    func test_getFromURL_resumesDataTaskWithURL() {
+        let dummyURL: URL = URL(string: "http://any-test.com")!
+        let session = URLSessionSpy()
+        let task = URLSessionDataTaskSpy()
+        session.stub(from: dummyURL, task: task)
+        let sut = URLSessionHTTPClient(session: session)
+        sut.get(from: dummyURL)
+        
+        XCTAssertEqual(task.resumeCounter, 1)
     }
     
     //MARK: Helper
     private class URLSessionSpy: URLSession {
         var receivedURLs: [URL] = []
+        private var stubs = [URL: URLSessionDataTask]()
+        
+        func stub(from url: URL, task: URLSessionDataTask) {
+            stubs.updateValue(task, forKey: url)
+        }
         
         override func dataTask(with url: URL, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask {
             receivedURLs.append(url)
-            return FakeSessionDataTask()
+            return stubs[url] ?? FakeSessionDataTask()
         }
     }
     
-    private class FakeSessionDataTask: URLSessionDataTask {}
+    private class FakeSessionDataTask: URLSessionDataTask {
+        override func resume() {}
+    }
+    
+    private class URLSessionDataTaskSpy: URLSessionDataTask {
+        var resumeCounter = 0
+        
+        override func resume() {
+            resumeCounter += 1
+        }
+    }
+
 }
