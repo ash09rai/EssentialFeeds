@@ -25,9 +25,9 @@ internal final class FeedItemMapper {
         var feedItem: FeedItem {
             return FeedItem(
                 id: id,
-                description: description,
-                location: location,
-                imageURL: image
+                desc: description,
+                loc: location,
+                url: image
             )
         }
     }
